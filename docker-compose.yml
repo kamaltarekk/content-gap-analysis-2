@@ -18,7 +18,18 @@ services:
     environment:
       DATABASE_URL: postgresql+psycopg://content:content@postgres:5432/content_diagnosis
       REDIS_URL: redis://redis:6379/0
+      JOB_BACKEND: celery
     ports: ["8000:8000"]
+    depends_on: [postgres, redis]
+
+  worker:
+    build: ./apps/api
+    command: celery -A app.worker.celery_app worker --loglevel=info
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql+psycopg://content:content@postgres:5432/content_diagnosis
+      REDIS_URL: redis://redis:6379/0
+      JOB_BACKEND: celery
     depends_on: [postgres, redis]
 
   web:

@@ -1,8 +1,6 @@
 from __future__ import annotations
 
-import asyncio
-
-from fastapi import APIRouter, BackgroundTasks, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import HTMLResponse, PlainTextResponse
 
 from app.models.domain import (
@@ -25,16 +23,17 @@ from app.schemas.requests import (
     SourceCreate,
     TransitionRequest,
 )
-from app.services.analyzer import get_analysis_provider
 from app.services.artifact import CSV_DATASETS, artifact_payload, csv_for, render_artifact_html
-from app.services.collector import UnsafeUrlError, collect_website, validate_public_url
+from app.services.collector import UnsafeUrlError, validate_public_url
 from app.services.comparability import comparison_matrix
 from app.services.evidence import extract_candidate_evidence
 from app.services.repository import repo
+from app.services.security import require_auth
 from app.services.setup import is_setup_conditional, missing_setup_fields, setup_status
 from app.services.state_machine import can_transition
+from app.services.tasks import get_task_backend, run_analysis, run_collection
 
-router = APIRouter(prefix="/api")
+router = APIRouter(prefix="/api", dependencies=[Depends(require_auth)])
 
 
 @router.get("/health")
@@ -145,38 +144,8 @@ def list_sources(project_id: str) -> list[Source]:
     return repo.by_project(repo.sources, project_id)
 
 
-async def _collect_job(job: Job, project: Project) -> None:
-    try:
-        project.status = ProjectStatus.COLLECTING
-        repo.save(project)
-        job.status = "running"
-        repo.save(job)
-        sources = repo.by_project(repo.sources, project.id)
-        website_sources = [s for s in sources if s.source_type == "website"]
-        for index, source in enumerate(website_sources, 1):
-            await collect_website(source)
-            repo.save(source)
-            job.progress = int(index / max(1, len(website_sources)) * 100)
-            repo.save(job)
-        project.status = ProjectStatus.COLLECTED
-        repo.save(project)
-        job.status = "completed"
-        job.message = "Collection completed"
-        repo.save(job)
-    except Exception as exc:
-        project.status = ProjectStatus.FAILED
-        repo.save(project)
-        job.status = "failed"
-        job.message = str(exc)
-        repo.save(job)
-
-
-def _run_collect(job: Job, project: Project) -> None:
-    asyncio.run(_collect_job(job, project))
-
-
 @router.post("/projects/{project_id}/collect", response_model=Job, status_code=202)
-def start_collection(project_id: str, background_tasks: BackgroundTasks) -> Job:
+def start_collection(project_id: str) -> Job:
     project = repo.projects.get(project_id)
     if not project:
         raise HTTPException(404, "Project not found")
@@ -189,7 +158,7 @@ def start_collection(project_id: str, background_tasks: BackgroundTasks) -> Job:
         raise HTTPException(400, "Register at least one source")
     job = Job(project_id=project_id, job_type="collection")
     repo.add(repo.jobs, job)
-    background_tasks.add_task(_run_collect, job, project)
+    get_task_backend().enqueue(run_collection, project_id, job.id)
     return job
 
 
@@ -219,7 +188,7 @@ def review_queue(project_id: str, review_status: str | None = None) -> list[Evid
 
 
 @router.post("/projects/{project_id}/analyze", response_model=Job, status_code=202)
-def analyze(project_id: str, background_tasks: BackgroundTasks) -> Job:
+def analyze(project_id: str) -> Job:
     project = repo.projects.get(project_id)
     if not project:
         raise HTTPException(404, "Project not found")
@@ -230,27 +199,7 @@ def analyze(project_id: str, background_tasks: BackgroundTasks) -> Job:
         raise HTTPException(409, f"Analysis cannot start from {project.status}")
     job = Job(project_id=project_id, job_type="analysis")
     repo.add(repo.jobs, job)
-
-    def run() -> None:
-        try:
-            project.status = ProjectStatus.ANALYZING
-            repo.save(project)
-            job.status = "running"
-            repo.save(job)
-            get_analysis_provider().analyze(project_id)
-            project.status = ProjectStatus.ANALYZED
-            repo.save(project)
-            job.status = "completed"
-            job.progress = 100
-            repo.save(job)
-        except Exception as exc:
-            project.status = ProjectStatus.FAILED
-            repo.save(project)
-            job.status = "failed"
-            job.message = str(exc)
-            repo.save(job)
-
-    background_tasks.add_task(run)
+    get_task_backend().enqueue(run_analysis, project_id, job.id)
     return job
 
 

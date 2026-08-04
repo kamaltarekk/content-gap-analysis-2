@@ -114,9 +114,9 @@ Acceptance:
 
 ## Phase 9 — Production hardening
 
-- [ ] PostgreSQL
-- [ ] Celery/Redis
-- [ ] S3-compatible storage
-- [ ] authentication
-- [ ] deployment
-- [ ] observability
+- [x] PostgreSQL
+- [x] Celery/Redis
+- [x] S3-compatible storage
+- [x] authentication
+- [x] deployment
+- [x] observability
