@@ -102,10 +102,10 @@ Acceptance:
 
 ## Phase 8 — Exports and artifact
 
-- [ ] CSV/JSON exports
-- [ ] Interactive artifact
-- [ ] Evidence drawer and direct links
-- [ ] RTL/LTR QA
+- [x] CSV/JSON exports
+- [x] Interactive artifact
+- [x] Evidence drawer and direct links
+- [x] RTL/LTR QA
 
 Acceptance:
 

@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 
 from fastapi import APIRouter, BackgroundTasks, HTTPException, status
+from fastapi.responses import HTMLResponse, PlainTextResponse
 
 from app.models.domain import (
     Entity,
@@ -25,6 +26,7 @@ from app.schemas.requests import (
     TransitionRequest,
 )
 from app.services.analyzer import get_analysis_provider
+from app.services.artifact import CSV_DATASETS, artifact_payload, csv_for, render_artifact_html
 from app.services.collector import UnsafeUrlError, collect_website, validate_public_url
 from app.services.comparability import comparison_matrix
 from app.services.evidence import extract_candidate_evidence
@@ -283,6 +285,46 @@ def comparison(project_id: str) -> dict:
     if not project:
         raise HTTPException(404, "Project not found")
     return comparison_matrix(project_id)
+
+
+@router.get("/projects/{project_id}/artifact")
+def artifact(project_id: str) -> dict:
+    try:
+        return artifact_payload(project_id)
+    except KeyError as exc:
+        raise HTTPException(404, "Project not found") from exc
+
+
+@router.get("/projects/{project_id}/export.json")
+def export_json(project_id: str) -> dict:
+    try:
+        return artifact_payload(project_id)
+    except KeyError as exc:
+        raise HTTPException(404, "Project not found") from exc
+
+
+@router.get("/projects/{project_id}/export/{dataset}.csv", response_class=PlainTextResponse)
+def export_csv(project_id: str, dataset: str) -> PlainTextResponse:
+    if dataset not in CSV_DATASETS:
+        raise HTTPException(404, f"Unknown dataset: {dataset}")
+    try:
+        payload = artifact_payload(project_id)
+    except KeyError as exc:
+        raise HTTPException(404, "Project not found") from exc
+    return PlainTextResponse(
+        csv_for(payload, dataset),
+        media_type="text/csv",
+        headers={"Content-Disposition": f'attachment; filename="{dataset}.csv"'},
+    )
+
+
+@router.get("/projects/{project_id}/artifact.html", response_class=HTMLResponse)
+def artifact_html(project_id: str) -> HTMLResponse:
+    try:
+        payload = artifact_payload(project_id)
+    except KeyError as exc:
+        raise HTTPException(404, "Project not found") from exc
+    return HTMLResponse(render_artifact_html(payload))
 
 
 @router.get("/projects/{project_id}/gaps", response_model=list[Gap])

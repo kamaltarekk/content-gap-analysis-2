@@ -1,6 +1,18 @@
 import type { Comparison, Dashboard, Entity, Evidence, Gap, GapDecision, Project, ProjectStatus, ReviewDecision, SetupStatus, Source } from '../types'
 
-const API = import.meta.env.VITE_API_URL ?? 'http://localhost:8000'
+export const apiBase = import.meta.env.VITE_API_URL ?? 'http://localhost:8000'
+const API = apiBase
+
+export function exportLinks(projectId: string) {
+  const base = `${apiBase}/api/projects/${projectId}`
+  return {
+    json: `${base}/export.json`,
+    artifact: `${base}/artifact.html`,
+    salesElementsCsv: `${base}/export/sales_elements.csv`,
+    gapsCsv: `${base}/export/gaps.csv`,
+    evidenceCsv: `${base}/export/evidence.csv`,
+  }
+}
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`${API}${path}`, {

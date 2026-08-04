@@ -4,7 +4,7 @@ import { EvidenceDrawer } from '../components/EvidenceDrawer'
 import { GapExplorer } from '../components/GapExplorer'
 import { ReviewQueue } from '../components/ReviewQueue'
 import { StatusBadge } from '../components/StatusBadge'
-import { api } from '../lib/api'
+import { api, exportLinks } from '../lib/api'
 import type { Dashboard, SalesElement } from '../types'
 
 function scoreLabel(item: SalesElement): string {
@@ -49,6 +49,9 @@ export function DashboardPage({ projectId }: { projectId: string }) {
   }
 
   if (!data) return <main className="shell">Loading…</main>
+
+  const links = exportLinks(projectId)
+  const contentUrls = Object.fromEntries(data.content_items.map((c) => [c.id, c.url]))
 
   return (
     <main className="shell">
@@ -116,7 +119,19 @@ export function DashboardPage({ projectId }: { projectId: string }) {
 
       <GapExplorer projectId={projectId} />
 
-      <EvidenceDrawer open={drawer} onClose={() => setDrawer(false)} evidence={data.evidence} />
+      <section className="panel">
+        <h2>Exports</h2>
+        <p className="muted">Download the diagnosis data or open the shareable interactive artifact.</p>
+        <div className="actions">
+          <a className="link-button" href={links.artifact} target="_blank" rel="noreferrer">Open artifact</a>
+          <a className="link-button" href={links.json} download>JSON</a>
+          <a className="link-button" href={links.salesElementsCsv} download>Sales Elements CSV</a>
+          <a className="link-button" href={links.gapsCsv} download>Gaps CSV</a>
+          <a className="link-button" href={links.evidenceCsv} download>Evidence CSV</a>
+        </div>
+      </section>
+
+      <EvidenceDrawer open={drawer} onClose={() => setDrawer(false)} evidence={data.evidence} urls={contentUrls} />
     </main>
   )
 }
