@@ -1,0 +1,1 @@
+Run the full backend and frontend checks. Audit review states, evidence IDs, competitor comparability, score eligibility, Arabic/RTL rendering, exports, and artifact runtime. Produce a release-blocker list ordered by severity. Do not change code.

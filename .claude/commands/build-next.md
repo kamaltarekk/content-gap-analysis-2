@@ -1,0 +1,1 @@
+Read CLAUDE.md and docs/IMPLEMENTATION_PLAN.md. Find the first incomplete phase. Inspect the repository and tests. State the plan, implement only that phase, run its tests, and update the phase checklist. Stop at the acceptance gate.
