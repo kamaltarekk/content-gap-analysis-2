@@ -54,6 +54,36 @@ export interface Source {
   failed_count: number
 }
 
+export type ReviewStatus =
+  | 'pending_review'
+  | 'approved'
+  | 'edited_and_approved'
+  | 'rejected'
+  | 'hypothesis'
+  | 'conflict'
+
+export interface Evidence {
+  id: string
+  entity_id: string
+  content_item_id: string
+  verbatim_text: string
+  normalized_summary: string
+  finding_status: string
+  category: string
+  confidence: string
+  review_status: ReviewStatus
+  reviewer: string | null
+  reviewed_at: string | null
+  review_note: string
+}
+
+export interface ReviewDecision {
+  status: ReviewStatus
+  edited_value?: string
+  reviewer: string
+  note?: string
+}
+
 export interface SalesElement {
   id: string
   canonical_element_id: string
@@ -81,7 +111,7 @@ export interface Dashboard {
   entities: Entity[]
   sources: Source[]
   content_items: Array<{ id: string; title: string; url: string; text: string }>
-  evidence: Array<{ id: string; verbatim_text: string; normalized_summary: string; review_status: string }>
+  evidence: Evidence[]
   sales_elements: SalesElement[]
   gaps: Gap[]
   jobs: Array<{ id: string; job_type: string; status: string; progress: number }>

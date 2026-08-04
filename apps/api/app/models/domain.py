@@ -65,6 +65,22 @@ class ReviewStatus(StrEnum):
     CONFLICT = "conflict"
 
 
+class FindingStatus(StrEnum):
+    OBSERVED_FACT = "observed_fact"
+    BRAND_CLAIM = "brand_claim"
+    INFERENCE = "inference"
+    HYPOTHESIS = "hypothesis"
+    UNKNOWN = "unknown"
+
+
+class EvidenceCategory(StrEnum):
+    CLAIM = "claim"
+    SOCIAL_PROOF = "social_proof"
+    CLAIM_PROOF = "claim_proof"
+    OTHER = "other"
+    UNCLASSIFIED = "unclassified"
+
+
 class PresenceStatus(StrEnum):
     PRESENT = "present"
     PARTIAL = "partial"
@@ -132,9 +148,13 @@ class Evidence(BaseModel):
     content_item_id: str
     verbatim_text: str
     normalized_summary: str
-    finding_status: str
+    finding_status: FindingStatus
     confidence: str
+    category: EvidenceCategory = EvidenceCategory.UNCLASSIFIED
     review_status: ReviewStatus = ReviewStatus.PENDING
+    reviewer: str | None = None
+    reviewed_at: str | None = None
+    review_note: str = ""
 
 
 class SalesElementAssessment(BaseModel):

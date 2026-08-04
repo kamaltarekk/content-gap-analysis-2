@@ -1,5 +1,6 @@
 import { FormEvent, useEffect, useState } from 'react'
 import { EvidenceDrawer } from '../components/EvidenceDrawer'
+import { ReviewQueue } from '../components/ReviewQueue'
 import { StatusBadge } from '../components/StatusBadge'
 import { api } from '../lib/api'
 import type { Dashboard } from '../types'
@@ -84,6 +85,8 @@ export function DashboardPage({ projectId }: { projectId: string }) {
         </div>
         {message && <p>{message}</p>}
       </section>
+
+      <ReviewQueue evidence={data.evidence} onReviewed={refresh} />
 
       <section className="panel">
         <div className="section-title"><h2>Sales Elements</h2><button onClick={() => setDrawer(true)}>Evidence drawer</button></div>

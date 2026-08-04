@@ -4,7 +4,16 @@ import asyncio
 
 from fastapi import APIRouter, BackgroundTasks, HTTPException, status
 
-from app.models.domain import Entity, Job, Project, ProjectStatus, Source, now_iso
+from app.models.domain import (
+    Entity,
+    Evidence,
+    Job,
+    Project,
+    ProjectStatus,
+    ReviewStatus,
+    Source,
+    now_iso,
+)
 from app.schemas.requests import (
     EntityCreate,
     ProjectCreate,
@@ -15,6 +24,7 @@ from app.schemas.requests import (
 )
 from app.services.analyzer import get_analysis_provider
 from app.services.collector import UnsafeUrlError, collect_website, validate_public_url
+from app.services.evidence import extract_candidate_evidence
 from app.services.repository import repo
 from app.services.setup import is_setup_conditional, missing_setup_fields, setup_status
 from app.services.state_machine import can_transition
@@ -185,9 +195,22 @@ def prepare_review(project_id: str) -> Project:
         raise HTTPException(404, "Project not found")
     if not can_transition(project.status, ProjectStatus.READY_FOR_REVIEW):
         raise HTTPException(409, f"Cannot prepare review from {project.status}")
+    # Populate the review queue with candidate evidence (all pending_review).
+    extract_candidate_evidence(project_id)
     project.status = ProjectStatus.READY_FOR_REVIEW
     repo.save(project)
     return project
+
+
+@router.get("/projects/{project_id}/review-queue", response_model=list[Evidence])
+def review_queue(project_id: str, review_status: str | None = None) -> list[Evidence]:
+    project = repo.projects.get(project_id)
+    if not project:
+        raise HTTPException(404, "Project not found")
+    items = repo.by_project(repo.evidence, project_id)
+    if review_status:
+        items = [item for item in items if item.review_status == review_status]
+    return items
 
 
 @router.post("/projects/{project_id}/analyze", response_model=Job, status_code=202)
@@ -251,13 +274,27 @@ def dashboard(project_id: str) -> dict:
     }
 
 
-@router.post("/evidence/{evidence_id}/review")
-def review_evidence(evidence_id: str, decision: ReviewDecision) -> dict:
+@router.post("/evidence/{evidence_id}/review", response_model=Evidence)
+def review_evidence(evidence_id: str, decision: ReviewDecision) -> Evidence:
     evidence = repo.evidence.get(evidence_id)
     if not evidence:
         raise HTTPException(404, "Evidence not found")
-    evidence.review_status = decision.status
+
+    final_status = decision.status
+    updates: dict = {}
     if decision.edited_value:
-        evidence.normalized_summary = decision.edited_value
-    repo.save(evidence)
-    return {"evidence": evidence, "reviewer": decision.reviewer}
+        updates["normalized_summary"] = decision.edited_value
+        # An edit that is accepted is recorded as edited_and_approved, never a silent
+        # approval of the original candidate.
+        if decision.status == ReviewStatus.APPROVED:
+            final_status = ReviewStatus.EDITED_APPROVED
+
+    # Every recorded decision captures who decided and when (domain rules 4 and 14).
+    updates.update(
+        review_status=final_status,
+        reviewer=decision.reviewer,
+        reviewed_at=now_iso(),
+        review_note=decision.note,
+    )
+    updated = evidence.model_copy(update=updates)
+    return repo.save(updated)

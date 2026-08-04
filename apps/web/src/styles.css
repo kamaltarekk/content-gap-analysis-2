@@ -30,6 +30,16 @@ a { color: #2758c7; overflow-wrap: anywhere; }
 .element-grid article { border: 1px solid #eaecf0; border-radius: 12px; padding: 1rem; }
 .element-grid h3 { margin: .4rem 0; }
 .error { color: #b42318; }
+.muted { color: #667085; }
+button.ghost { background: #eef2f8; color: #172033; }
+button.danger { background: #b42318; }
+.reviewer-field { display: grid; gap: .3rem; font-size: .85rem; }
+.reviewer-field input { padding: .5rem .7rem; }
+.list article.review-card { display: block; align-items: stretch; }
+.review-tags { display: flex; flex-wrap: wrap; gap: .4rem; margin-bottom: .5rem; }
+.review-card blockquote { margin: .4rem 0; }
+.review-card textarea { width: 100%; margin: .4rem 0; }
+.review-actions { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .6rem; }
 .notice { background: #fff8e6; border: 1px solid #f5d98a; color: #7a5b00; border-radius: 10px; padding: .7rem .9rem; }
 textarea { border: 1px solid #ccd3df; border-radius: 10px; padding: .72rem; background: white; font: inherit; resize: vertical; }
 .wizard-steps { list-style: none; display: flex; flex-wrap: wrap; gap: .6rem; padding: 0; margin: 1.2rem 0; }

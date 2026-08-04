@@ -54,10 +54,10 @@ Acceptance:
 
 ## Phase 4 — Evidence and review queue
 
-- [ ] Extract candidate evidence
-- [ ] Build review APIs
-- [ ] Build review queue UI
-- [ ] Add approve/edit/reject/hypothesis actions
+- [x] Extract candidate evidence
+- [x] Build review APIs
+- [x] Build review queue UI
+- [x] Add approve/edit/reject/hypothesis actions
 
 Acceptance:
 

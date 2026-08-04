@@ -92,7 +92,11 @@ class EvidenceRow(Base):
     normalized_summary: Mapped[str] = mapped_column(Text, nullable=False)
     finding_status: Mapped[str] = mapped_column(String, nullable=False)
     confidence: Mapped[str] = mapped_column(String, nullable=False)
+    category: Mapped[str] = mapped_column(String, nullable=False, default="unclassified")
     review_status: Mapped[str] = mapped_column(String, nullable=False, default="pending_review")
+    reviewer: Mapped[str | None] = mapped_column(String, nullable=True)
+    reviewed_at: Mapped[str | None] = mapped_column(String, nullable=True)
+    review_note: Mapped[str] = mapped_column(Text, nullable=False, default="")
 
 
 class AssessmentRow(Base):

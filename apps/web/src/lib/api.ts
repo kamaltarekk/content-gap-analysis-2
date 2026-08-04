@@ -1,4 +1,4 @@
-import type { Dashboard, Entity, Project, ProjectStatus, SetupStatus, Source } from '../types'
+import type { Dashboard, Entity, Evidence, Project, ProjectStatus, ReviewDecision, SetupStatus, Source } from '../types'
 
 const API = import.meta.env.VITE_API_URL ?? 'http://localhost:8000'
 
@@ -24,4 +24,7 @@ export const api = {
   prepareReview: (projectId: string) => request(`/api/projects/${projectId}/prepare-review`, { method: 'POST' }),
   analyze: (projectId: string) => request(`/api/projects/${projectId}/analyze`, { method: 'POST' }),
   dashboard: (projectId: string) => request<Dashboard>(`/api/projects/${projectId}/dashboard`),
+  reviewQueue: (projectId: string) => request<Evidence[]>(`/api/projects/${projectId}/review-queue`),
+  reviewEvidence: (evidenceId: string, decision: ReviewDecision) =>
+    request<Evidence>(`/api/evidence/${evidenceId}/review`, { method: 'POST', body: JSON.stringify(decision) }),
 }

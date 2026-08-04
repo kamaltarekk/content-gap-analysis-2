@@ -48,4 +48,5 @@ class SourceCreate(BaseModel):
 class ReviewDecision(BaseModel):
     status: ReviewStatus
     edited_value: str | None = None
-    reviewer: str = "user"
+    reviewer: str = Field(default="user", min_length=1)
+    note: str = ""
