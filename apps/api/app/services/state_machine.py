@@ -15,5 +15,9 @@ ALLOWED_TRANSITIONS: dict[ProjectStatus, set[ProjectStatus]] = {
 }
 
 
+def allowed_targets(current: ProjectStatus) -> set[ProjectStatus]:
+    return set(ALLOWED_TRANSITIONS[current])
+
+
 def can_transition(current: ProjectStatus, target: ProjectStatus) -> bool:
     return target in ALLOWED_TRANSITIONS[current]

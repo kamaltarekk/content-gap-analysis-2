@@ -1,17 +1,36 @@
 from pydantic import BaseModel, Field, HttpUrl
 
-from app.models.domain import EntityType, ReviewStatus, SourceType
+from app.models.domain import Bottleneck, EntityType, ProjectStatus, ReviewStatus, SourceType
 
 
 class ProjectCreate(BaseModel):
     name: str = Field(min_length=2)
     brand_name: str = Field(min_length=2)
-    market: str
-    product_or_service: str
-    target_buying_decision: str
-    purchase_type: str
-    primary_segment: str
-    primary_bottleneck: str = "unknown"
+    market: str = Field(min_length=1)
+    product_or_service: str = Field(min_length=1)
+    target_buying_decision: str = Field(min_length=1)
+    purchase_type: str = Field(min_length=1)
+    primary_segment: str = Field(min_length=1)
+    primary_bottleneck: Bottleneck = Bottleneck.UNKNOWN
+
+
+class ProjectSetupUpdate(BaseModel):
+    """Partial update of guided-setup fields (editable while the project is DRAFT)."""
+
+    model_config = {"extra": "forbid"}
+
+    name: str | None = Field(default=None, min_length=2)
+    brand_name: str | None = Field(default=None, min_length=2)
+    market: str | None = Field(default=None, min_length=1)
+    product_or_service: str | None = Field(default=None, min_length=1)
+    target_buying_decision: str | None = Field(default=None, min_length=1)
+    purchase_type: str | None = Field(default=None, min_length=1)
+    primary_segment: str | None = Field(default=None, min_length=1)
+    primary_bottleneck: Bottleneck | None = None
+
+
+class TransitionRequest(BaseModel):
+    target: ProjectStatus
 
 
 class EntityCreate(BaseModel):

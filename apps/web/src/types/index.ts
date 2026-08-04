@@ -24,6 +24,18 @@ export interface Project {
   status: ProjectStatus
 }
 
+export type Bottleneck = 'unknown' | 'attention' | 'desire' | 'persuasion' | 'friction'
+
+export interface SetupStatus {
+  status: ProjectStatus
+  missing_fields: string[]
+  ready_for_collection: boolean
+  bottleneck_resolved: boolean
+  conditional: boolean
+  can_submit_setup: boolean
+  allowed_transitions: ProjectStatus[]
+}
+
 export interface Entity {
   id: string
   project_id: string

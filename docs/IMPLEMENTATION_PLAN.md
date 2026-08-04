@@ -29,10 +29,10 @@ Acceptance:
 
 ## Phase 2 — Guided setup and state machine
 
-- [ ] Implement setup API
-- [ ] Implement project state transitions
-- [ ] Build setup wizard
-- [ ] Validate required fields
+- [x] Implement setup API
+- [x] Implement project state transitions
+- [x] Build setup wizard
+- [x] Validate required fields
 
 Acceptance:
 

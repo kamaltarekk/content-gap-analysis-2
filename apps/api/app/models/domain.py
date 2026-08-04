@@ -26,6 +26,14 @@ class ProjectStatus(StrEnum):
     FAILED = "FAILED"
 
 
+class Bottleneck(StrEnum):
+    UNKNOWN = "unknown"
+    ATTENTION = "attention"
+    DESIRE = "desire"
+    PERSUASION = "persuasion"
+    FRICTION = "friction"
+
+
 class EntityType(StrEnum):
     BRAND = "brand"
     COMPETITOR = "competitor"
@@ -74,7 +82,7 @@ class Project(BaseModel):
     target_buying_decision: str
     purchase_type: str
     primary_segment: str
-    primary_bottleneck: str = "unknown"
+    primary_bottleneck: Bottleneck = Bottleneck.UNKNOWN
     status: ProjectStatus = ProjectStatus.DRAFT
     created_at: str = Field(default_factory=now_iso)
     updated_at: str = Field(default_factory=now_iso)

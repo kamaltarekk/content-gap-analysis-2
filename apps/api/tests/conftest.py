@@ -26,3 +26,14 @@ def temp_db(tmp_path):
         yield url
     finally:
         session.configure(original_url)
+
+
+@pytest.fixture()
+def client(temp_db):
+    """FastAPI TestClient bound to the temporary database (runs lifespan startup)."""
+    from fastapi.testclient import TestClient
+
+    from app.main import app
+
+    with TestClient(app) as test_client:
+        yield test_client

@@ -4,11 +4,19 @@ import asyncio
 
 from fastapi import APIRouter, BackgroundTasks, HTTPException, status
 
-from app.models.domain import Entity, Job, Project, ProjectStatus, Source
-from app.schemas.requests import EntityCreate, ProjectCreate, ReviewDecision, SourceCreate
+from app.models.domain import Entity, Job, Project, ProjectStatus, Source, now_iso
+from app.schemas.requests import (
+    EntityCreate,
+    ProjectCreate,
+    ProjectSetupUpdate,
+    ReviewDecision,
+    SourceCreate,
+    TransitionRequest,
+)
 from app.services.analyzer import get_analysis_provider
 from app.services.collector import UnsafeUrlError, collect_website, validate_public_url
 from app.services.repository import repo
+from app.services.setup import is_setup_conditional, missing_setup_fields, setup_status
 from app.services.state_machine import can_transition
 
 router = APIRouter(prefix="/api")
@@ -36,6 +44,57 @@ def get_project(project_id: str) -> Project:
     if not project:
         raise HTTPException(404, "Project not found")
     return project
+
+
+@router.patch("/projects/{project_id}", response_model=Project)
+def update_project_setup(project_id: str, payload: ProjectSetupUpdate) -> Project:
+    project = repo.projects.get(project_id)
+    if not project:
+        raise HTTPException(404, "Project not found")
+    if project.status != ProjectStatus.DRAFT:
+        raise HTTPException(409, "Setup can only be edited while the project is DRAFT")
+    updates = payload.model_dump(exclude_unset=True)
+    if not updates:
+        return project
+    updated = project.model_copy(update={**updates, "updated_at": now_iso()})
+    return repo.save(updated)
+
+
+@router.get("/projects/{project_id}/setup")
+def get_setup(project_id: str) -> dict:
+    project = repo.projects.get(project_id)
+    if not project:
+        raise HTTPException(404, "Project not found")
+    return setup_status(project)
+
+
+@router.post("/projects/{project_id}/submit-setup")
+def submit_setup(project_id: str) -> dict:
+    project = repo.projects.get(project_id)
+    if not project:
+        raise HTTPException(404, "Project not found")
+    missing = missing_setup_fields(project)
+    if missing:
+        raise HTTPException(400, {"message": "Required setup fields are missing", "missing": missing})
+    if not can_transition(project.status, ProjectStatus.READY_FOR_COLLECTION):
+        raise HTTPException(409, f"Cannot submit setup from {project.status}")
+    updated = project.model_copy(
+        update={"status": ProjectStatus.READY_FOR_COLLECTION, "updated_at": now_iso()}
+    )
+    repo.save(updated)
+    # Unknown bottleneck is allowed; the project proceeds but stays flagged conditional.
+    return {"project": updated, "conditional": is_setup_conditional(updated)}
+
+
+@router.post("/projects/{project_id}/transition", response_model=Project)
+def transition_project(project_id: str, payload: TransitionRequest) -> Project:
+    project = repo.projects.get(project_id)
+    if not project:
+        raise HTTPException(404, "Project not found")
+    if not can_transition(project.status, payload.target):
+        raise HTTPException(409, f"Invalid transition from {project.status} to {payload.target}")
+    updated = project.model_copy(update={"status": payload.target, "updated_at": now_iso()})
+    return repo.save(updated)
 
 
 @router.post("/projects/{project_id}/entities", response_model=Entity, status_code=201)
