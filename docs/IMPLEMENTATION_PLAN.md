@@ -27,6 +27,11 @@ Acceptance:
 - CRUD survives process restart
 - migrations upgrade/downgrade
 
+Note: the Alembic baseline (`0001`) is an explicit table snapshot (not
+`metadata.create_all`), so future revisions can add columns incrementally without
+duplicate-column collisions. A schema-parity test asserts the migrated schema
+matches the ORM column-for-column.
+
 ## Phase 2 — Guided setup and state machine
 
 - [x] Implement setup API
