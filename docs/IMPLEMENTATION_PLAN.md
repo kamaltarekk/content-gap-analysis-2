@@ -17,10 +17,10 @@ Acceptance:
 
 ## Phase 1 — Persistence and migrations
 
-- [ ] Replace in-memory repository with SQLAlchemy persistence
-- [ ] Add Alembic
-- [ ] Add project/entity/source/job models
-- [ ] Add test database fixtures
+- [x] Replace in-memory repository with SQLAlchemy persistence
+- [x] Add Alembic
+- [x] Add project/entity/source/job models
+- [x] Add test database fixtures
 
 Acceptance:
 

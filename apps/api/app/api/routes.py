@@ -74,19 +74,27 @@ def list_sources(project_id: str) -> list[Source]:
 async def _collect_job(job: Job, project: Project) -> None:
     try:
         project.status = ProjectStatus.COLLECTING
+        repo.save(project)
         job.status = "running"
+        repo.save(job)
         sources = repo.by_project(repo.sources, project.id)
         website_sources = [s for s in sources if s.source_type == "website"]
         for index, source in enumerate(website_sources, 1):
             await collect_website(source)
+            repo.save(source)
             job.progress = int(index / max(1, len(website_sources)) * 100)
+            repo.save(job)
         project.status = ProjectStatus.COLLECTED
+        repo.save(project)
         job.status = "completed"
         job.message = "Collection completed"
+        repo.save(job)
     except Exception as exc:
         project.status = ProjectStatus.FAILED
+        repo.save(project)
         job.status = "failed"
         job.message = str(exc)
+        repo.save(job)
 
 
 def _run_collect(job: Job, project: Project) -> None:
@@ -100,6 +108,7 @@ def start_collection(project_id: str, background_tasks: BackgroundTasks) -> Job:
         raise HTTPException(404, "Project not found")
     if project.status == ProjectStatus.DRAFT:
         project.status = ProjectStatus.READY_FOR_COLLECTION
+        repo.save(project)
     if project.status != ProjectStatus.READY_FOR_COLLECTION:
         raise HTTPException(409, f"Collection cannot start from {project.status}")
     if not repo.by_project(repo.sources, project_id):
@@ -118,6 +127,7 @@ def prepare_review(project_id: str) -> Project:
     if not can_transition(project.status, ProjectStatus.READY_FOR_REVIEW):
         raise HTTPException(409, f"Cannot prepare review from {project.status}")
     project.status = ProjectStatus.READY_FOR_REVIEW
+    repo.save(project)
     return project
 
 
@@ -128,6 +138,7 @@ def analyze(project_id: str, background_tasks: BackgroundTasks) -> Job:
         raise HTTPException(404, "Project not found")
     if project.status == ProjectStatus.READY_FOR_REVIEW:
         project.status = ProjectStatus.APPROVED_FOR_ANALYSIS
+        repo.save(project)
     if project.status != ProjectStatus.APPROVED_FOR_ANALYSIS:
         raise HTTPException(409, f"Analysis cannot start from {project.status}")
     job = Job(project_id=project_id, job_type="analysis")
@@ -136,15 +147,21 @@ def analyze(project_id: str, background_tasks: BackgroundTasks) -> Job:
     def run() -> None:
         try:
             project.status = ProjectStatus.ANALYZING
+            repo.save(project)
             job.status = "running"
+            repo.save(job)
             get_analysis_provider().analyze(project_id)
             project.status = ProjectStatus.ANALYZED
+            repo.save(project)
             job.status = "completed"
             job.progress = 100
+            repo.save(job)
         except Exception as exc:
             project.status = ProjectStatus.FAILED
+            repo.save(project)
             job.status = "failed"
             job.message = str(exc)
+            repo.save(job)
 
     background_tasks.add_task(run)
     return job
@@ -183,4 +200,5 @@ def review_evidence(evidence_id: str, decision: ReviewDecision) -> dict:
     evidence.review_status = decision.status
     if decision.edited_value:
         evidence.normalized_summary = decision.edited_value
+    repo.save(evidence)
     return {"evidence": evidence, "reviewer": decision.reviewer}
