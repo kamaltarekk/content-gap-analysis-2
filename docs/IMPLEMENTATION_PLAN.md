@@ -4,10 +4,10 @@ Claude Code must execute one phase at a time.
 
 ## Phase 0 — Repository health
 
-- [ ] Install API dependencies
-- [ ] Install web dependencies
-- [ ] Run existing checks
-- [ ] Fix scaffold issues
+- [x] Install API dependencies
+- [x] Install web dependencies
+- [x] Run existing checks
+- [x] Fix scaffold issues
 
 Acceptance:
 
