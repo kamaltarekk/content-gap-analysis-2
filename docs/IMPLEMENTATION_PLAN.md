@@ -66,11 +66,11 @@ Acceptance:
 
 ## Phase 5 — Sales Elements analysis
 
-- [ ] Add Anthropic structured-output adapter
-- [ ] Complete mock adapter
-- [ ] Validate SE01–SE17
-- [ ] Implement score eligibility
-- [ ] Build Sales Elements UI
+- [x] Add Anthropic structured-output adapter
+- [x] Complete mock adapter
+- [x] Validate SE01–SE17
+- [x] Implement score eligibility
+- [x] Build Sales Elements UI
 
 Acceptance:
 

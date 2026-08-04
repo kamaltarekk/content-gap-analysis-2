@@ -93,6 +93,7 @@ export interface SalesElement {
   confidence: string
   recommendation: string
   review_status: string
+  evidence_ids: string[]
 }
 
 export interface Gap {

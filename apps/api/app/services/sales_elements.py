@@ -18,6 +18,22 @@ SALES_ELEMENTS = [
     ("SE17", "instinct", "offer"),
 ]
 
+# SE01 (trigger_pain) is deliberately unresolved until the user settles its semantics
+# (domain rule 10). It never receives a numeric score.
+UNRESOLVED_ELEMENTS: set[str] = {"SE01"}
+
+ELEMENT_IDS: list[str] = [element_id for element_id, _family, _key in SALES_ELEMENTS]
+KEY_BY_ID: dict[str, str] = {element_id: key for element_id, _family, key in SALES_ELEMENTS}
+FAMILY_BY_ID: dict[str, str] = {element_id: family for element_id, family, _key in SALES_ELEMENTS}
+
+# Evidence categories (domain rule 8) map to the canonical element they inform.
+CATEGORY_TO_ELEMENT: dict[str, str] = {
+    "claim": "SE02",
+    "social_proof": "SE09",
+    "claim_proof": "SE13",
+}
+ELEMENT_TO_CATEGORY: dict[str, str] = {v: k for k, v in CATEGORY_TO_ELEMENT.items()}
+
 KEYWORDS = {
     "claim": ["best", "quality", "safe", "premium", "الأفضل", "جودة", "آمن"],
     "gain": ["benefit", "save", "comfort", "يوفر", "راحة", "ميزة"],

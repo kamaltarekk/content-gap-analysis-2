@@ -3,7 +3,13 @@ import { EvidenceDrawer } from '../components/EvidenceDrawer'
 import { ReviewQueue } from '../components/ReviewQueue'
 import { StatusBadge } from '../components/StatusBadge'
 import { api } from '../lib/api'
-import type { Dashboard } from '../types'
+import type { Dashboard, SalesElement } from '../types'
+
+function scoreLabel(item: SalesElement): string {
+  if (item.canonical_element_id === 'SE01') return 'SE01 pending resolution'
+  if (item.computed_score === null) return 'Not scored (unknown ≠ 0)'
+  return `Score: ${item.computed_score}`
+}
 
 export function DashboardPage({ projectId }: { projectId: string }) {
   const [data, setData] = useState<Dashboard | null>(null)
@@ -90,14 +96,15 @@ export function DashboardPage({ projectId }: { projectId: string }) {
 
       <section className="panel">
         <div className="section-title"><h2>Sales Elements</h2><button onClick={() => setDrawer(true)}>Evidence drawer</button></div>
+        <p className="muted">Scores are eligibility-gated: unknown is never zero, and SE01 stays unresolved until you settle its semantics. Confidence is tracked separately from severity.</p>
         <div className="element-grid">
           {data.sales_elements.length === 0 ? <p>Run analysis to create candidate assessments.</p> : data.sales_elements.map((item) => (
             <article key={item.id}>
               <strong>{item.canonical_element_id}</strong>
               <h3 dir="auto">{item.canonical_key}</h3>
               <StatusBadge value={item.presence_status} />
-              <p>Score: {item.computed_score ?? '—'}</p>
-              <small>{item.confidence} confidence · {item.review_status}</small>
+              <p className="score">{scoreLabel(item)}</p>
+              <small>{item.confidence} confidence · {item.evidence_ids.length} evidence · {item.review_status}</small>
             </article>
           ))}
         </div>
