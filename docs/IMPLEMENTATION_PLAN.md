@@ -41,10 +41,10 @@ Acceptance:
 
 ## Phase 3 — Website collection
 
-- [ ] Implement SSRF-safe URL validation
-- [ ] Implement same-origin Playwright crawler
-- [ ] Add caps, delay, screenshots, and logs
-- [ ] Store snapshots and normalized content
+- [x] Implement SSRF-safe URL validation
+- [x] Implement same-origin Playwright crawler
+- [x] Add caps, delay, screenshots, and logs
+- [x] Store snapshots and normalized content
 
 Acceptance:
 
