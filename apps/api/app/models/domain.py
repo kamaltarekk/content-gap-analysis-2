@@ -179,18 +179,52 @@ class SalesElementAssessment(BaseModel):
     review_status: ReviewStatus = ReviewStatus.PENDING
 
 
+class GapType(StrEnum):
+    SALES_ELEMENT_GAP = "sales_element_gap"
+    COMPARATIVE_GAP = "comparative_gap"
+    NON_CONTENT_BLOCKER = "non_content_blocker"
+
+
+class GapStatus(StrEnum):
+    CANDIDATE = "candidate"
+    PROBABLE = "probable"
+    INSUFFICIENT_EVIDENCE = "insufficient_evidence"
+    OBSERVED_ISSUE_PENDING_IMPACT_VALIDATION = "observed_issue_pending_impact_validation"
+    NON_CONTENT_BLOCKER_CANDIDATE = "non_content_blocker_candidate"
+    CONFIRMED = "confirmed"
+    REJECTED = "rejected"
+
+
+class RootCause(StrEnum):
+    UNKNOWN = "unknown"
+    # content root causes
+    COVERAGE_GAP = "coverage_gap"
+    WEAK_CLAIM_PROOF = "weak_claim_proof"
+    MISSING_SOCIAL_PROOF = "missing_social_proof"
+    WEAK_PERSUASION = "weak_persuasion"
+    # non-content blockers (never confirmable from public content)
+    TRAFFIC = "traffic"
+    TARGETING = "targeting"
+    PRICING = "pricing"
+    LOGISTICS = "logistics"
+    TECHNICAL = "technical"
+
+
 class Gap(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid4()))
     project_id: str
     title: str
-    gap_type: str
-    status: str = "candidate"
+    gap_type: GapType
+    status: GapStatus = GapStatus.CANDIDATE
     severity: str = "medium"
     confidence: str = "low"
-    root_cause: str = "unknown"
+    root_cause: RootCause = RootCause.UNKNOWN
     evidence_ids: list[str] = Field(default_factory=list)
     alternative_explanations: list[str] = Field(default_factory=list)
     review_status: ReviewStatus = ReviewStatus.PENDING
+    reviewer: str | None = None
+    reviewed_at: str | None = None
+    review_note: str = ""
 
 
 class Job(BaseModel):

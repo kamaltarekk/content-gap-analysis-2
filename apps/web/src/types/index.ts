@@ -104,7 +104,18 @@ export interface Gap {
   severity: string
   confidence: string
   root_cause: string
+  evidence_ids: string[]
+  alternative_explanations: string[]
   review_status: string
+  reviewer: string | null
+  reviewed_at: string | null
+  review_note: string
+}
+
+export interface GapDecision {
+  status: string
+  reviewer: string
+  note?: string
 }
 
 export interface ComparisonCell {

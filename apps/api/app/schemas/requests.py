@@ -1,6 +1,13 @@
 from pydantic import BaseModel, Field, HttpUrl
 
-from app.models.domain import Bottleneck, EntityType, ProjectStatus, ReviewStatus, SourceType
+from app.models.domain import (
+    Bottleneck,
+    EntityType,
+    GapStatus,
+    ProjectStatus,
+    ReviewStatus,
+    SourceType,
+)
 
 
 class ProjectCreate(BaseModel):
@@ -31,6 +38,12 @@ class ProjectSetupUpdate(BaseModel):
 
 class TransitionRequest(BaseModel):
     target: ProjectStatus
+
+
+class GapDecision(BaseModel):
+    status: GapStatus
+    reviewer: str = Field(default="user", min_length=1)
+    note: str = ""
 
 
 class EntityCreate(BaseModel):

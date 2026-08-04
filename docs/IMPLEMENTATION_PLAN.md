@@ -90,10 +90,10 @@ Acceptance:
 
 ## Phase 7 — Gap engine
 
-- [ ] Implement candidate gap rules
-- [ ] Separate severity/confidence
-- [ ] Implement root-cause taxonomy
-- [ ] Build gap explorer
+- [x] Implement candidate gap rules
+- [x] Separate severity/confidence
+- [x] Implement root-cause taxonomy
+- [x] Build gap explorer
 
 Acceptance:
 

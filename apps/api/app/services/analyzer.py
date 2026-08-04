@@ -6,6 +6,7 @@ from pydantic import BaseModel, Field
 
 from app.core.config import settings
 from app.models.domain import Gap, PresenceStatus, SalesElementAssessment
+from app.services.gaps import generate_candidate_gaps
 from app.services.repository import repo
 from app.services.sales_elements import (
     ELEMENT_TO_CATEGORY,
@@ -31,38 +32,6 @@ def _persist(
         repo.add(repo.assessments, assessment)
         assessments.append(assessment)
     return assessments
-
-
-def _gaps_from_weak_assessments(
-    project_id: str, assessments: list[SalesElementAssessment]
-) -> list[Gap]:
-    gaps: list[Gap] = []
-    by_entity: dict[str, list[SalesElementAssessment]] = {}
-    for assessment in assessments:
-        by_entity.setdefault(assessment.entity_id, []).append(assessment)
-    for entity_assessments in by_entity.values():
-        weak = [
-            a
-            for a in entity_assessments
-            if a.computed_score is not None and a.computed_score < 5
-        ]
-        for assessment in weak[:3]:
-            gap = Gap(
-                project_id=project_id,
-                title=f"Weak {assessment.canonical_key} coverage within collected sample",
-                gap_type="sales_element_gap",
-                status="candidate",
-                severity="medium",
-                confidence="low",
-                root_cause="coverage_gap",
-                evidence_ids=assessment.evidence_ids,
-                alternative_explanations=[
-                    "Relevant content may exist outside the collected sample."
-                ],
-            )
-            repo.add(repo.gaps, gap)
-            gaps.append(gap)
-    return gaps
 
 
 class AnalysisProvider(ABC):
@@ -146,7 +115,7 @@ class MockAnalysisProvider(AnalysisProvider):
 
     def analyze(self, project_id: str) -> tuple[list[SalesElementAssessment], list[Gap]]:
         assessments = _persist(project_id, self._candidates(project_id))
-        gaps = _gaps_from_weak_assessments(project_id, assessments)
+        gaps = generate_candidate_gaps(project_id)
         return assessments, gaps
 
 
@@ -232,7 +201,7 @@ class AnthropicAnalysisProvider(AnalysisProvider):
         if response is None:
             raise RuntimeError("Anthropic analysis did not return structured output")
         assessments = _persist(project_id, build_candidates_from_ai(response))
-        gaps = _gaps_from_weak_assessments(project_id, assessments)
+        gaps = generate_candidate_gaps(project_id)
         return assessments, gaps
 
 

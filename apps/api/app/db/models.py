@@ -132,6 +132,9 @@ class GapRow(Base):
     evidence_ids: Mapped[list[str]] = mapped_column(JSON, default=list)
     alternative_explanations: Mapped[list[str]] = mapped_column(JSON, default=list)
     review_status: Mapped[str] = mapped_column(String, nullable=False, default="pending_review")
+    reviewer: Mapped[str | None] = mapped_column(String, nullable=True)
+    reviewed_at: Mapped[str | None] = mapped_column(String, nullable=True)
+    review_note: Mapped[str] = mapped_column(Text, nullable=False, default="")
 
 
 class JobRow(Base):

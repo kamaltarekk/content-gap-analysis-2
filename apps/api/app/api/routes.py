@@ -7,6 +7,7 @@ from fastapi import APIRouter, BackgroundTasks, HTTPException, status
 from app.models.domain import (
     Entity,
     Evidence,
+    Gap,
     Job,
     Project,
     ProjectStatus,
@@ -16,6 +17,7 @@ from app.models.domain import (
 )
 from app.schemas.requests import (
     EntityCreate,
+    GapDecision,
     ProjectCreate,
     ProjectSetupUpdate,
     ReviewDecision,
@@ -281,6 +283,39 @@ def comparison(project_id: str) -> dict:
     if not project:
         raise HTTPException(404, "Project not found")
     return comparison_matrix(project_id)
+
+
+@router.get("/projects/{project_id}/gaps", response_model=list[Gap])
+def list_gaps(project_id: str, gap_type: str | None = None, status: str | None = None) -> list[Gap]:
+    project = repo.projects.get(project_id)
+    if not project:
+        raise HTTPException(404, "Project not found")
+    gaps = repo.by_project(repo.gaps, project_id)
+    if gap_type:
+        gaps = [g for g in gaps if g.gap_type == gap_type]
+    if status:
+        gaps = [g for g in gaps if g.status == status]
+    return gaps
+
+
+@router.post("/gaps/{gap_id}/review", response_model=Gap)
+def review_gap(gap_id: str, decision: GapDecision) -> Gap:
+    gap = repo.gaps.get(gap_id)
+    if not gap:
+        raise HTTPException(404, "Gap not found")
+    # A gap is only ever confirmed through a recorded review decision (domain rule 14);
+    # the engine never produces a confirmed gap on its own.
+    review_status = ReviewStatus.APPROVED if decision.status == "confirmed" else ReviewStatus.REJECTED
+    updated = gap.model_copy(
+        update={
+            "status": decision.status,
+            "review_status": review_status,
+            "reviewer": decision.reviewer,
+            "reviewed_at": now_iso(),
+            "review_note": decision.note,
+        }
+    )
+    return repo.save(updated)
 
 
 @router.post("/evidence/{evidence_id}/review", response_model=Evidence)

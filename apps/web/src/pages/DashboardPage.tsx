@@ -1,6 +1,7 @@
 import { FormEvent, useEffect, useState } from 'react'
 import { ComparisonMatrix } from '../components/ComparisonMatrix'
 import { EvidenceDrawer } from '../components/EvidenceDrawer'
+import { GapExplorer } from '../components/GapExplorer'
 import { ReviewQueue } from '../components/ReviewQueue'
 import { StatusBadge } from '../components/StatusBadge'
 import { api } from '../lib/api'
@@ -113,17 +114,7 @@ export function DashboardPage({ projectId }: { projectId: string }) {
 
       <ComparisonMatrix projectId={projectId} />
 
-      <section className="panel">
-        <h2>Gap candidates</h2>
-        <div className="list">
-          {data.gaps.length === 0 ? <p>No gap candidates yet.</p> : data.gaps.map((gap) => (
-            <article key={gap.id} dir="auto">
-              <div><strong>{gap.title}</strong><p>{gap.root_cause}</p></div>
-              <div><StatusBadge value={gap.status} /><small>{gap.severity} severity · {gap.confidence} confidence</small></div>
-            </article>
-          ))}
-        </div>
-      </section>
+      <GapExplorer projectId={projectId} />
 
       <EvidenceDrawer open={drawer} onClose={() => setDrawer(false)} evidence={data.evidence} />
     </main>
