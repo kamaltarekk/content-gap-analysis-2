@@ -24,6 +24,7 @@ from app.schemas.requests import (
 )
 from app.services.analyzer import get_analysis_provider
 from app.services.collector import UnsafeUrlError, collect_website, validate_public_url
+from app.services.comparability import comparison_matrix
 from app.services.evidence import extract_candidate_evidence
 from app.services.repository import repo
 from app.services.setup import is_setup_conditional, missing_setup_fields, setup_status
@@ -272,6 +273,14 @@ def dashboard(project_id: str) -> dict:
         "gaps": repo.by_project(repo.gaps, project_id),
         "jobs": repo.by_project(repo.jobs, project_id),
     }
+
+
+@router.get("/projects/{project_id}/comparison")
+def comparison(project_id: str) -> dict:
+    project = repo.projects.get(project_id)
+    if not project:
+        raise HTTPException(404, "Project not found")
+    return comparison_matrix(project_id)
 
 
 @router.post("/evidence/{evidence_id}/review", response_model=Evidence)

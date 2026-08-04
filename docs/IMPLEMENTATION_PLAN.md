@@ -80,9 +80,9 @@ Acceptance:
 
 ## Phase 6 — Competitor comparability
 
-- [ ] Implement comparability thresholds
-- [ ] Build comparison matrix
-- [ ] Block totals for insufficient samples
+- [x] Implement comparability thresholds
+- [x] Build comparison matrix
+- [x] Block totals for insufficient samples
 
 Acceptance:
 

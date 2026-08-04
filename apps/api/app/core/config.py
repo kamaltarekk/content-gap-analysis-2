@@ -13,6 +13,9 @@ class Settings(BaseSettings):
     playwright_headless: bool = True
     max_pages_per_source: int = 20
     request_delay_ms: int = 750
+    # Minimum collected pages before an entity can be treated as comparable and
+    # receive a total score. A single homepage (1 page) must never qualify (rule 12).
+    comparability_min_pages: int = 3
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 

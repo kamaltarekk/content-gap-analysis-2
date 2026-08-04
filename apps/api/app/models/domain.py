@@ -39,6 +39,13 @@ class EntityType(StrEnum):
     COMPETITOR = "competitor"
 
 
+class ComparableStatus(StrEnum):
+    PROVISIONALLY_COMPARABLE = "provisionally_comparable"
+    COMPARABLE = "comparable"
+    INSUFFICIENT_SAMPLE = "insufficient_sample"
+    NOT_APPLICABLE = "not_applicable"
+
+
 class SourceType(StrEnum):
     WEBSITE = "website"
     SOCIAL = "social"
@@ -109,7 +116,7 @@ class Entity(BaseModel):
     project_id: str
     name: str
     entity_type: EntityType
-    comparable_status: str = "provisionally_comparable"
+    comparable_status: ComparableStatus = ComparableStatus.PROVISIONALLY_COMPARABLE
 
 
 class Source(BaseModel):

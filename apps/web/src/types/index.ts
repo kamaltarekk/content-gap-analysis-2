@@ -107,6 +107,35 @@ export interface Gap {
   review_status: string
 }
 
+export interface ComparisonCell {
+  presence_status: string | null
+  computed_score: number | null
+  note: string | null
+}
+
+export interface ComparisonElement {
+  canonical_element_id: string
+  canonical_key: string
+  family: string
+}
+
+export interface ComparisonEntity {
+  entity_id: string
+  name: string
+  entity_type: string
+  page_count: number
+  comparable_status: string
+  cells: Record<string, ComparisonCell>
+  total: number | null
+  total_blocked_reason: string | null
+}
+
+export interface Comparison {
+  elements: ComparisonElement[]
+  entities: ComparisonEntity[]
+  min_pages: number
+}
+
 export interface Dashboard {
   project: Project
   entities: Entity[]

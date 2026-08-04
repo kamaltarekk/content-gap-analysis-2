@@ -1,4 +1,5 @@
 import { FormEvent, useEffect, useState } from 'react'
+import { ComparisonMatrix } from '../components/ComparisonMatrix'
 import { EvidenceDrawer } from '../components/EvidenceDrawer'
 import { ReviewQueue } from '../components/ReviewQueue'
 import { StatusBadge } from '../components/StatusBadge'
@@ -109,6 +110,8 @@ export function DashboardPage({ projectId }: { projectId: string }) {
           ))}
         </div>
       </section>
+
+      <ComparisonMatrix projectId={projectId} />
 
       <section className="panel">
         <h2>Gap candidates</h2>
